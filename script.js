@@ -1,6 +1,8 @@
 // script.js - Carga dinámica de productos + funcionalidades interactivas
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM cargado - Iniciando script...');
+    
     // 1. PRIMERO: Cargar los datos del JSON
     cargarDatosProductos();
     
@@ -14,43 +16,79 @@ document.addEventListener('DOMContentLoaded', function() {
 // =================== FUNCIÓN PRINCIPAL PARA CARGAR DATOS ===================
 async function cargarDatosProductos() {
     try {
-        console.log('Cargando datos de productos...');
+        console.log('📦 Cargando datos de productos...');
         
-        // Cargar el archivo products.json
-        const response = await fetch('data/products.json');
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
+        // INTENTA DIFERENTES RUTAS (GitHub Pages puede ser especial)
+        const rutasPosibles = [
+            './data/products.json',           // Ruta relativa estándar
+            'data/products.json',             // Sin punto
+            '/data/products.json',            // Desde raíz
+            'products.json'                   // Directamente
+        ];
+        
+        let data = null;
+        let ultimoError = null;
+        
+        // Intentar cada ruta posible
+        for (const ruta of rutasPosibles) {
+            try {
+                console.log(`🔄 Intentando ruta: ${ruta}`);
+                const response = await fetch(ruta);
+                
+                if (response.ok) {
+                    data = await response.json();
+                    console.log(`✅ Éxito cargando desde: ${ruta}`);
+                    console.log(`📊 Productos encontrados: ${data.productos ? data.productos.length : 0}`);
+                    break;
+                } else {
+                    console.log(`❌ Ruta ${ruta} - Status: ${response.status}`);
+                }
+            } catch (error) {
+                ultimoError = error;
+                console.log(`❌ Error en ruta ${ruta}:`, error.message);
+            }
         }
         
-        const data = await response.json();
-        console.log('Productos cargados:', data.productos.length);
+        // Si no se cargó ningún archivo
+        if (!data) {
+            throw new Error(`No se pudo cargar products.json. Último error: ${ultimoError ? ultimoError.message : 'Desconocido'}`);
+        }
         
         // Verificar si tenemos productos
         if (data.productos && data.productos.length > 0) {
-            // A. Cargar producto destacado (primero que tenga destacado: true o el primero)
+            console.log(`🎯 Productos listos: ${data.productos.length}`);
+            
+            // A. Cargar producto destacado
             cargarProductoDestacado(data.productos);
             
             // B. Cargar productos recomendados
             cargarProductosRecomendados(data.productos);
+            
         } else {
-            console.warn('No se encontraron productos en el JSON');
+            console.warn('⚠️ No se encontraron productos en el JSON');
+            mostrarErrorCarga('El archivo JSON no contiene productos.');
         }
         
     } catch (error) {
-        console.error('Error cargando productos:', error);
+        console.error('❌ Error cargando productos:', error);
         // Mostrar un mensaje amigable al usuario
-        mostrarErrorCarga();
+        mostrarErrorCarga(error.message);
     }
 }
 
 // =================== FUNCIONES PARA CARGAR PRODUCTOS ===================
 function cargarProductoDestacado(productos) {
+    console.log('🛒 Buscando producto destacado...');
+    
     // Buscar producto destacado (con propiedad destacado: true)
     let productoDestacado = productos.find(p => p.destacado === true);
     
     // Si no hay ninguno destacado, usar el primero
     if (!productoDestacado) {
         productoDestacado = productos[0];
+        console.log('ℹ️ No hay producto destacado, usando el primero:', productoDestacado.nombre);
+    } else {
+        console.log('⭐ Producto destacado encontrado:', productoDestacado.nombre);
     }
     
     if (productoDestacado) {
@@ -58,6 +96,7 @@ function cargarProductoDestacado(productos) {
         const tituloElement = document.querySelector('.product-title');
         if (tituloElement) {
             tituloElement.textContent = productoDestacado.nombre;
+            console.log('📝 Título actualizado');
         }
         
         // Actualizar precio
@@ -77,44 +116,54 @@ function cargarProductoDestacado(productos) {
             }
             
             precioElement.innerHTML = precioHTML;
+            console.log('💰 Precio actualizado');
         }
         
         // Actualizar descripción
         const descripcionElement = document.querySelector('.editor-note p');
         if (descripcionElement && productoDestacado.descripcion) {
             descripcionElement.textContent = productoDestacado.descripcion;
+            console.log('📄 Descripción actualizada');
         }
         
-        // Actualizar imagen (si tuvieras imágenes reales)
+        // Actualizar imagen
         const imagenElement = document.querySelector('.product-image');
         if (imagenElement) {
-            // Por ahora solo actualizamos el texto, luego puedes cambiar a imágenes reales
             const colorFondo = getColorPorMarca(productoDestacado.marca);
             imagenElement.innerHTML = `
                 <div style="background-color: ${colorFondo}; height: 300px; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
                     <span style="color: rgba(0,0,0,0.5); font-size: 18px; font-weight: bold;">${productoDestacado.marca}</span>
                 </div>
             `;
+            console.log('🖼️ Imagen actualizada');
         }
     }
 }
 
 function cargarProductosRecomendados(productos) {
+    console.log('📱 Cargando productos recomendados...');
+    
     const gridElement = document.querySelector('.products-grid');
-    if (!gridElement) return;
+    if (!gridElement) {
+        console.error('❌ No se encontró .products-grid');
+        return;
+    }
     
     // Limpiar contenido existente
     gridElement.innerHTML = '';
     
-    // Tomar hasta 5 productos (excluyendo el destacado si es posible)
-    const productosParaMostrar = productos
-        .filter(p => !p.destacado || p.destacado === false) // Excluir destacado si queremos
-        .slice(0, 5);
+    // Filtrar productos no destacados
+    let productosParaMostrar = productos.filter(p => !p.destacado || p.destacado === false);
     
-    // Si no tenemos suficientes productos, usar todos
+    // Si no tenemos suficientes productos no destacados, mezclar con destacados
     if (productosParaMostrar.length < 5) {
+        console.log(`ℹ️ Solo ${productosParaMostrar.length} productos no destacados, agregando destacados`);
         productosParaMostrar = productos.slice(0, 5);
+    } else {
+        productosParaMostrar = productosParaMostrar.slice(0, 5);
     }
+    
+    console.log(`🛍️ Mostrando ${productosParaMostrar.length} productos recomendados`);
     
     // Crear tarjetas para cada producto
     productosParaMostrar.forEach(producto => {
@@ -153,14 +202,19 @@ function cargarProductosRecomendados(productos) {
     
     // Re-configurar los eventos de los botones de carrito para los nuevos productos
     configurarBotonesCarrito();
+    console.log('✅ Productos recomendados cargados');
 }
 
-// =================== FUNCIONES DE NAVBAR (TU CÓDIGO ORIGINAL) ===================
+// =================== FUNCIONES DE NAVBAR ===================
 function configurarNavbar() {
+    console.log('🔧 Configurando navbar...');
+    
     const navItems = document.querySelectorAll('.nav-item');
     const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
     if (isTouchDevice) {
+        console.log('📱 Dispositivo táctil detectado');
+        
         navItems.forEach(item => {
             const link = item.querySelector('.nav-link');
             
@@ -192,6 +246,8 @@ function configurarNavbar() {
     }
     
     if (!isTouchDevice) {
+        console.log('💻 Modo desktop detectado');
+        
         navItems.forEach(item => {
             item.addEventListener('mouseenter', function() {
                 const dropdown = this.querySelector('.dropdown-menu');
@@ -204,26 +260,32 @@ function configurarNavbar() {
             });
         });
     }
+    
+    console.log('✅ Navbar configurado');
 }
 
 // =================== FUNCIONES DE INTERACCIÓN ===================
 function configurarInteracciones() {
+    console.log('⚙️ Configurando interacciones...');
     configurarBotonesCarrito();
     configurarBusqueda();
+    console.log('✅ Interacciones configuradas');
 }
 
 function configurarBotonesCarrito() {
     const addToCartButtons = document.querySelectorAll('.btn-add');
+    console.log(`🛒 Encontrados ${addToCartButtons.length} botones de carrito`);
     
     addToCartButtons.forEach(button => {
-        // Evitar duplicar eventos
-        button.replaceWith(button.cloneNode(true));
+        // Eliminar eventos anteriores
+        const newButton = button.cloneNode(true);
+        button.parentNode.replaceChild(newButton, button);
     });
     
     // Volver a seleccionar después de clonar
     document.querySelectorAll('.btn-add').forEach(button => {
         button.addEventListener('click', function(e) {
-            e.stopPropagation(); // Evitar que el clic en el botón active el clic en la tarjeta
+            e.stopPropagation();
             
             const productCard = this.closest('.product-card');
             const productInfo = this.closest('.product-info');
@@ -244,20 +306,17 @@ function configurarBotonesCarrito() {
                 
                 // Animación del botón
                 const originalText = this.textContent;
-                const originalBg = this.style.backgroundColor;
-                const originalColor = this.style.color;
-                
                 this.textContent = '¡AGREGADO!';
                 this.style.backgroundColor = '#4CAF50';
                 this.style.color = 'white';
                 
                 setTimeout(() => {
                     this.textContent = originalText;
-                    this.style.backgroundColor = originalBg;
-                    this.style.color = originalColor;
+                    this.style.backgroundColor = '#333';
+                    this.style.color = 'white';
                 }, 2000);
                 
-                // Actualizar contador del carrito (si tuvieras uno)
+                // Actualizar contador del carrito
                 actualizarContadorCarrito();
             }
         });
@@ -273,6 +332,7 @@ function configurarBusqueda() {
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') performSearch();
         });
+        console.log('🔍 Búsqueda configurada');
     }
 }
 
@@ -282,16 +342,11 @@ function performSearch() {
     
     if (searchTerm) {
         alert(`🔍 Buscando: "${searchTerm}"\n\nEn una versión completa, aquí se filtrarían los productos según tu búsqueda.`);
-        
-        // Podrías implementar búsqueda real aquí:
-        // 1. Filtrar productos que contengan searchTerm en nombre, marca o descripción
-        // 2. Mostrar resultados en la página
     }
 }
 
 // =================== FUNCIONES AUXILIARES ===================
 function getColorPorMarca(marca) {
-    // Asignar colores consistentes por marca
     const coloresMarcas = {
         'Beauty of Joseon': '#f0e6d6',
         'celimax': '#e6f0f7',
@@ -308,11 +363,13 @@ function getColorPorMarca(marca) {
 }
 
 function actualizarContadorCarrito() {
-    // Si tuvieras un contador en el ícono del carrito
-    const cartIcon = document.querySelector('.fa-shopping-cart').parentElement;
+    const cartIcon = document.querySelector('.fa-shopping-cart');
+    if (!cartIcon) return;
+    
+    const cartContainer = cartIcon.parentElement;
     
     // Crear o actualizar el badge
-    let badge = cartIcon.querySelector('.cart-badge');
+    let badge = cartContainer.querySelector('.cart-badge');
     if (!badge) {
         badge = document.createElement('span');
         badge.className = 'cart-badge';
@@ -330,50 +387,56 @@ function actualizarContadorCarrito() {
             align-items: center;
             justify-content: center;
         `;
-        cartIcon.style.position = 'relative';
-        cartIcon.appendChild(badge);
+        cartContainer.style.position = 'relative';
+        cartContainer.appendChild(badge);
     }
     
     // Incrementar contador
     let currentCount = parseInt(badge.textContent) || 0;
     badge.textContent = currentCount + 1;
+    console.log(`🛒 Carrito actualizado: ${currentCount + 1} productos`);
 }
 
-function mostrarErrorCarga() {
+function mostrarErrorCarga(mensaje) {
+    console.error('❌ Mostrando error al usuario:', mensaje);
+    
     const productosGrid = document.querySelector('.products-grid');
     if (productosGrid) {
         productosGrid.innerHTML = `
             <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
                 <p style="color: #666; margin-bottom: 20px;">
-                    ⚠️ No se pudieron cargar los productos. Por favor, verifica tu conexión.
+                    ⚠️ No se pudieron cargar los productos. 
+                    <br><small>Error: ${mensaje || 'Desconocido'}</small>
                 </p>
-                <button onclick="location.reload()" style="
+                <button onclick="cargarDatosProductos()" style="
                     background-color: #333;
                     color: white;
                     border: none;
                     padding: 10px 20px;
                     border-radius: 4px;
                     cursor: pointer;
+                    margin: 5px;
                 ">
                     Reintentar
+                </button>
+                <button onclick="location.reload()" style="
+                    background-color: #d97777;
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin: 5px;
+                ">
+                    Recargar Página
                 </button>
             </div>
         `;
     }
 }
 
-// =================== INICIALIZACIÓN ADICIONAL ===================
-// También puedes cargar categorías dinámicamente si quieres
-async function cargarCategorias() {
-    try {
-        const response = await fetch('data/categories.json');
-        const data = await response.json();
-        console.log('Categorías cargadas:', data);
-        // Aquí podrías actualizar el navbar dinámicamente
-    } catch (error) {
-        console.warn('No se pudieron cargar las categorías:', error);
-    }
-}
-
-// Opcional: Cargar categorías al inicio
-// cargarCategorias();
+// =================== DEBUG - PARA VERIFICAR ===================
+// Esto ayudará a ver si el script se carga
+console.log('🎯 script.js cargado correctamente');
+console.log('📍 URL actual:', window.location.href);
+console.log('🖥️ User Agent:', navigator.userAgent);
