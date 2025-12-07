@@ -1,4 +1,4 @@
-// script.js - Carga dinámica de productos + funcionalidades interactivas
+// script.js - VERSIÓN para archivos JSON en RAÍZ
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM cargado - Iniciando script...');
@@ -17,17 +17,18 @@ document.addEventListener('DOMContentLoaded', function() {
 async function cargarDatosProductos() {
     try {
         console.log('📦 Cargando datos de productos...');
+        console.log('📍 Archivos en raíz: products.json');
         
-        // INTENTA DIFERENTES RUTAS (GitHub Pages puede ser especial)
+        // RUTAS PARA ARCHIVOS EN RAÍZ
         const rutasPosibles = [
-            './data/products.json',           // Ruta relativa estándar
-            'data/products.json',             // Sin punto
-            '/data/products.json',            // Desde raíz
-            'products.json'                   // Directamente
+            './products.json',      // ✅ En la raíz (relativo)
+            'products.json',        // ✅ En la raíz 
+            '/products.json',       // ✅ Desde raíz absoluta
+            'products.json?v=' + Date.now()  // ✅ Para evitar cache
         ];
         
         let data = null;
-        let ultimoError = null;
+        let rutaExito = null;
         
         // Intentar cada ruta posible
         for (const ruta of rutasPosibles) {
@@ -36,27 +37,44 @@ async function cargarDatosProductos() {
                 const response = await fetch(ruta);
                 
                 if (response.ok) {
-                    data = await response.json();
+                    const text = await response.text();
                     console.log(`✅ Éxito cargando desde: ${ruta}`);
+                    
+                    // Verificar que no esté vacío
+                    if (text.trim() === '') {
+                        console.log('⚠️ Archivo vacío');
+                        continue;
+                    }
+                    
+                    // Parsear JSON
+                    data = JSON.parse(text);
+                    rutaExito = ruta;
                     console.log(`📊 Productos encontrados: ${data.productos ? data.productos.length : 0}`);
+                    
+                    // Mostrar info del primer producto
+                    if (data.productos && data.productos.length > 0) {
+                        console.log('⭐ Primer producto:', data.productos[0].nombre);
+                    }
+                    
                     break;
                 } else {
                     console.log(`❌ Ruta ${ruta} - Status: ${response.status}`);
                 }
             } catch (error) {
-                ultimoError = error;
                 console.log(`❌ Error en ruta ${ruta}:`, error.message);
             }
         }
         
         // Si no se cargó ningún archivo
         if (!data) {
-            throw new Error(`No se pudo cargar products.json. Último error: ${ultimoError ? ultimoError.message : 'Desconocido'}`);
+            // Intentar carga de emergencia con datos embebidos
+            console.log('🆘 Usando datos de emergencia...');
+            data = obtenerDatosEmergencia();
         }
         
         // Verificar si tenemos productos
         if (data.productos && data.productos.length > 0) {
-            console.log(`🎯 Productos listos: ${data.productos.length}`);
+            console.log(`🎯 ${data.productos.length} productos listos (desde: ${rutaExito || 'embebidos'})`);
             
             // A. Cargar producto destacado
             cargarProductoDestacado(data.productos);
@@ -65,22 +83,89 @@ async function cargarDatosProductos() {
             cargarProductosRecomendados(data.productos);
             
         } else {
-            console.warn('⚠️ No se encontraron productos en el JSON');
-            mostrarErrorCarga('El archivo JSON no contiene productos.');
+            console.warn('⚠️ No se encontraron productos');
+            mostrarErrorCarga('No hay productos disponibles.');
         }
         
     } catch (error) {
         console.error('❌ Error cargando productos:', error);
-        // Mostrar un mensaje amigable al usuario
-        mostrarErrorCarga(error.message);
+        // Intentar con datos de emergencia
+        const dataEmergencia = obtenerDatosEmergencia();
+        cargarProductoDestacado(dataEmergencia.productos);
+        cargarProductosRecomendados(dataEmergencia.productos);
     }
+}
+
+// =================== DATOS DE EMERGENCIA (si falla el JSON) ===================
+function obtenerDatosEmergencia() {
+    console.log('🚨 Usando datos de emergencia embebidos');
+    return {
+        "productos": [
+            {
+                "id": 1,
+                "nombre": "Beauty of Joseon - Sérum Facial Glow Serum Jumbo",
+                "marca": "Beauty of Joseon",
+                "categoria": "Sérums Faciales",
+                "precio": 16.17,
+                "precioOriginal": 24.31,
+                "descuento": 23,
+                "descripcion": "Mejora la piel apagada con este potente sérum facial infusionado con un 60% de propolis y 2% de medianmida para atacar la inflamación, controlar la producción de sebos y tratar la hiperpigmentación mientras mantiene los niveles de humectación altos.",
+                "destacado": true
+            },
+            {
+                "id": 2,
+                "nombre": "celimax - Sérum Facial The Vita-A Retinal Shot Tightening Booster",
+                "marca": "celimax",
+                "categoria": "Sérums Faciales",
+                "precio": 11.88,
+                "precioOriginal": 15.99,
+                "descuento": 13,
+                "descripcion": "Sérum con retinal para tensado y firmeza de la piel.",
+                "destacado": false
+            },
+            {
+                "id": 3,
+                "nombre": "Dr. Althea - Crema Hidratante 345 Relief Cream",
+                "marca": "Dr. Althea",
+                "categoria": "Cremas Hidratantes",
+                "precio": 21.38,
+                "precioOriginal": 25.99,
+                "descuento": 18,
+                "descripcion": "Crema hidratante con aloe vera para piel sensible.",
+                "destacado": false
+            },
+            {
+                "id": 4,
+                "nombre": "Punto SEOUL - Crema con Pantenol Mighty Bamboo Panthenol Cream",
+                "marca": "Punto SEOUL",
+                "categoria": "Cremas Hidratantes",
+                "precio": 12.71,
+                "precioOriginal": 15.50,
+                "descuento": 18,
+                "descripcion": "Crema con pantenol para hidratación intensiva.",
+                "destacado": false
+            },
+            {
+                "id": 5,
+                "nombre": "AP LB - Mascarilla Glutathione Niacinamide Sheet Mask",
+                "marca": "AP LB",
+                "categoria": "Mascarillas",
+                "precio": 0.98,
+                "precioOriginal": 1.50,
+                "descuento": 34,
+                "descripcion": "Mascarilla facial con glutathione y niacinamida.",
+                "destacado": false
+            }
+        ]
+    };
 }
 
 // =================== FUNCIONES PARA CARGAR PRODUCTOS ===================
 function cargarProductoDestacado(productos) {
     console.log('🛒 Buscando producto destacado...');
+    console.log('📊 Recibidos:', productos.length, 'productos');
     
-    // Buscar producto destacado (con propiedad destacado: true)
+    // Buscar producto destacado
     let productoDestacado = productos.find(p => p.destacado === true);
     
     // Si no hay ninguno destacado, usar el primero
@@ -97,6 +182,8 @@ function cargarProductoDestacado(productos) {
         if (tituloElement) {
             tituloElement.textContent = productoDestacado.nombre;
             console.log('📝 Título actualizado');
+        } else {
+            console.error('❌ No se encontró .product-title');
         }
         
         // Actualizar precio
@@ -117,6 +204,8 @@ function cargarProductoDestacado(productos) {
             
             precioElement.innerHTML = precioHTML;
             console.log('💰 Precio actualizado');
+        } else {
+            console.error('❌ No se encontró .product-price');
         }
         
         // Actualizar descripción
@@ -124,6 +213,8 @@ function cargarProductoDestacado(productos) {
         if (descripcionElement && productoDestacado.descripcion) {
             descripcionElement.textContent = productoDestacado.descripcion;
             console.log('📄 Descripción actualizada');
+        } else {
+            console.error('❌ No se encontró .editor-note p');
         }
         
         // Actualizar imagen
@@ -136,6 +227,8 @@ function cargarProductoDestacado(productos) {
                 </div>
             `;
             console.log('🖼️ Imagen actualizada');
+        } else {
+            console.error('❌ No se encontró .product-image');
         }
     }
 }
@@ -146,18 +239,32 @@ function cargarProductosRecomendados(productos) {
     const gridElement = document.querySelector('.products-grid');
     if (!gridElement) {
         console.error('❌ No se encontró .products-grid');
+        // Intentar crear el elemento si no existe
+        const container = document.querySelector('.featured-products .container');
+        if (container) {
+            const newGrid = document.createElement('div');
+            newGrid.className = 'products-grid';
+            container.appendChild(newGrid);
+            console.log('✅ Creado .products-grid nuevo');
+            return cargarProductosRecomendados(productos); // Reintentar
+        }
         return;
     }
     
-    // Limpiar contenido existente
-    gridElement.innerHTML = '';
+    console.log('✅ .products-grid encontrado');
+    
+    // Limpiar contenido existente (solo si tiene hijos)
+    if (gridElement.children.length > 0) {
+        console.log('🧹 Limpiando productos existentes...');
+        gridElement.innerHTML = '';
+    }
     
     // Filtrar productos no destacados
     let productosParaMostrar = productos.filter(p => !p.destacado || p.destacado === false);
     
     // Si no tenemos suficientes productos no destacados, mezclar con destacados
     if (productosParaMostrar.length < 5) {
-        console.log(`ℹ️ Solo ${productosParaMostrar.length} productos no destacados, agregando destacados`);
+        console.log(`ℹ️ Solo ${productosParaMostrar.length} productos no destacados, usando primeros 5`);
         productosParaMostrar = productos.slice(0, 5);
     } else {
         productosParaMostrar = productosParaMostrar.slice(0, 5);
@@ -166,7 +273,7 @@ function cargarProductosRecomendados(productos) {
     console.log(`🛍️ Mostrando ${productosParaMostrar.length} productos recomendados`);
     
     // Crear tarjetas para cada producto
-    productosParaMostrar.forEach(producto => {
+    productosParaMostrar.forEach((producto, index) => {
         const colorFondo = getColorPorMarca(producto.marca);
         
         const productCard = document.createElement('div');
@@ -198,11 +305,14 @@ function cargarProductosRecomendados(productos) {
         `;
         
         gridElement.appendChild(productCard);
+        console.log(`✅ Producto ${index + 1} añadido: ${producto.nombre.substring(0, 30)}...`);
     });
     
-    // Re-configurar los eventos de los botones de carrito para los nuevos productos
-    configurarBotonesCarrito();
-    console.log('✅ Productos recomendados cargados');
+    // Re-configurar los eventos de los botones de carrito
+    setTimeout(() => {
+        configurarBotonesCarrito();
+        console.log('✅ Botones de carrito reconfigurados');
+    }, 100);
 }
 
 // =================== FUNCIONES DE NAVBAR ===================
@@ -435,8 +545,8 @@ function mostrarErrorCarga(mensaje) {
     }
 }
 
-// =================== DEBUG - PARA VERIFICAR ===================
-// Esto ayudará a ver si el script se carga
+// =================== DEBUG INICIAL ===================
 console.log('🎯 script.js cargado correctamente');
 console.log('📍 URL actual:', window.location.href);
-console.log('🖥️ User Agent:', navigator.userAgent);
+console.log('📁 Archivos esperados en raíz: products.json');
+console.log('🕐 Hora:', new Date().toLocaleTimeString());

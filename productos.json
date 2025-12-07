@@ -8,11 +8,8 @@
       "precio": 16.17,
       "precioOriginal": 24.31,
       "descuento": 23,
-      "descripcion": "Mejora la piel apagada con este potente sérum facial infusionado con un 60% de propolis y 2% de medianmida para atacar la inflamación, controlar la producción de sebos y tratar la hiperpigmentación mientras mantiene los niveles de humectación altos. La textura, rica como miel, se absorbe fácilmente en la piel sin dejar una sensación pegajosa. Formulada usando solamente ingredientes certificados EWG, este sérum es apto para pieles sensibles.",
-      "imagen": "",
-      "destacado": true,
-      "stock": true,
-      "envioRapido": true
+      "descripcion": "Mejora la piel apagada con este potente sérum facial infusionado con un 60% de propolis y 2% de medianmida para atacar la inflamación, controlar la producción de sebos y tratar la hiperpigmentación mientras mantiene los niveles de humectación altos.",
+      "destacado": true
     },
     {
       "id": 2,
@@ -22,11 +19,8 @@
       "precio": 11.88,
       "precioOriginal": 15.99,
       "descuento": 13,
-      "descripcion": "Sérum con retinal para tensado y firmeza de la piel. Ayuda a reducir arrugas y líneas finas mientras mejora la elasticidad de la piel.",
-      "imagen": "",
-      "destacado": false,
-      "stock": true,
-      "envioRapido": false
+      "descripcion": "Sérum con retinal para tensado y firmeza de la piel.",
+      "destacado": false
     },
     {
       "id": 3,
@@ -36,109 +30,8 @@
       "precio": 21.38,
       "precioOriginal": 25.99,
       "descuento": 18,
-      "descripcion": "Crema hidratante con aloe vera para piel sensible. Proporciona alivio inmediato y hidratación duradera sin sensación grasosa.",
-      "imagen": "",
-      "destacado": false,
-      "stock": true,
-      "envioRapido": true
-    },
-    {
-      "id": 4,
-      "nombre": "Punto SEOUL - Crema con Pantenol Mighty Bamboo Panthenol Cream",
-      "marca": "Punto SEOUL",
-      "categoria": "Cremas Hidratantes",
-      "precio": 12.71,
-      "precioOriginal": 15.50,
-      "descuento": 18,
-      "descripcion": "Crema con pantenol para hidratación intensiva. Ideal para pieles secas y deshidratadas, restaura la barrera cutánea.",
-      "imagen": "",
-      "destacado": false,
-      "stock": true,
-      "envioRapido": false
-    },
-    {
-      "id": 5,
-      "nombre": "AP LB - Mascarilla Glutathione Niacinamide Sheet Mask",
-      "marca": "AP LB",
-      "categoria": "Mascarillas",
-      "precio": 0.98,
-      "precioOriginal": 1.50,
-      "descuento": 34,
-      "descripcion": "Mascarilla facial con glutathione y niacinamida para iluminación y uniformidad del tono de la piel. Uso único.",
-      "imagen": "",
-      "destacado": false,
-      "stock": true,
-      "envioRapido": true
-    },
-    {
-      "id": 6,
-      "nombre": "COSRX - Advanced Snail 96 Mucin Power Essence",
-      "marca": "COSRX",
-      "categoria": "Esencia Facial",
-      "precio": 19.99,
-      "precioOriginal": 24.99,
-      "descuento": 20,
-      "descripcion": "Esencia con 96% de mucina de caracol para reparación e hidratación intensiva. Ideal para todo tipo de piel.",
-      "imagen": "",
-      "destacado": true,
-      "stock": true,
-      "envioRapido": true
-    },
-    {
-      "id": 7,
-      "nombre": "I'm from - Mascarilla de Arroz",
-      "marca": "I'm from",
-      "categoria": "Mascarillas",
-      "precio": 22.50,
-      "precioOriginal": 28.00,
-      "descuento": 20,
-      "descripcion": "Mascarilla de arroz para iluminación y textura suave. Extrae las impurezas mientras nutre la piel.",
-      "imagen": "",
-      "destacado": false,
-      "stock": true,
-      "envioRapido": false
-    },
-    {
-      "id": 8,
-      "nombre": "LANEIGE - Sleeping Mask",
-      "marca": "LANEIGE",
-      "categoria": "Mascarillas",
-      "precio": 25.00,
-      "precioOriginal": 32.00,
-      "descuento": 22,
-      "descripcion": "Mascarilla nocturna para hidratación intensiva. Aplicar antes de dormir para despertar con piel radiante.",
-      "imagen": "",
-      "destacado": true,
-      "stock": true,
-      "envioRapido": true
-    },
-    {
-      "id": 9,
-      "nombre": "romand - Lip Gloss Glasting Water Gloss",
-      "marca": "romand",
-      "categoria": "Maquillaje",
-      "precio": 8.99,
-      "precioOriginal": 12.50,
-      "descuento": 28,
-      "descripcion": "Gloss labial con efecto agua que brilla intensamente. No pegajoso y de larga duración.",
-      "imagen": "",
-      "destacado": false,
-      "stock": true,
-      "envioRapido": true
-    },
-    {
-      "id": 10,
-      "nombre": "Anua - Toner Heartleaf 77% Soothing Toner",
-      "marca": "Anua",
-      "categoria": "Tónicos Faciales",
-      "precio": 18.50,
-      "precioOriginal": 22.00,
-      "descuento": 16,
-      "descripcion": "Tónico calmante con 77% de extracto de heartleaf. Ideal para pieles sensibles y con rojeces.",
-      "imagen": "",
-      "destacado": false,
-      "stock": true,
-      "envioRapido": false
+      "descripcion": "Crema hidratante con aloe vera para piel sensible.",
+      "destacado": false
     }
   ]
 }
