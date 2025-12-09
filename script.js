@@ -1,5 +1,9 @@
 // script.js - VERSIÓN para archivos JSON en RAÍZ
 
+// Variables globales
+let productosData = null;
+let carritoCount = 0;
+
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM cargado - Iniciando script...');
     
@@ -72,6 +76,9 @@ async function cargarDatosProductos() {
             data = obtenerDatosEmergencia();
         }
         
+        // Guardar datos globalmente
+        productosData = data;
+        
         // Verificar si tenemos productos
         if (data.productos && data.productos.length > 0) {
             console.log(`🎯 ${data.productos.length} productos listos (desde: ${rutaExito || 'embebidos'})`);
@@ -91,6 +98,7 @@ async function cargarDatosProductos() {
         console.error('❌ Error cargando productos:', error);
         // Intentar con datos de emergencia
         const dataEmergencia = obtenerDatosEmergencia();
+        productosData = dataEmergencia;
         cargarProductoDestacado(dataEmergencia.productos);
         cargarProductosRecomendados(dataEmergencia.productos);
     }
@@ -107,9 +115,9 @@ function obtenerDatosEmergencia() {
                 "marca": "Beauty of Joseon",
                 "categoria": "Sérums Faciales",
                 "precio": 16.17,
-                "precioOriginal": 24.31,
-                "descuento": 23,
-                "descripcion": "Mejora la piel apagada con este potente sérum facial infusionado con un 60% de propolis y 2% de medianmida para atacar la inflamación, controlar la producción de sebos y tratar la hiperpigmentación mientras mantiene los niveles de humectación altos.",
+                "precioOriginal": null,
+                "descuento": null,
+                "descripcion": "Mejora la piel apagada con este potente sérum facial infusionado con un 60% de propolis y 2% de medianmida para atacar la inflamación, controlar la producción de sebos y tratar la hiperpigmentación mientras mantiene los niveles de humectación altos. La textura, rica como miel, se absorbe fácilmente en la piel sin dejar una sensación pegajosa.",
                 "destacado": true
             },
             {
@@ -118,9 +126,9 @@ function obtenerDatosEmergencia() {
                 "marca": "celimax",
                 "categoria": "Sérums Faciales",
                 "precio": 11.88,
-                "precioOriginal": 15.99,
-                "descuento": 13,
-                "descripcion": "Sérum con retinal para tensado y firmeza de la piel.",
+                "precioOriginal": null,
+                "descuento": null,
+                "descripcion": "Sérum con retinal para tensado y firmeza de la piel. Formulado con ingredientes activos que ayudan a mejorar la elasticidad y reducir la apariencia de líneas finas.",
                 "destacado": false
             },
             {
@@ -129,9 +137,9 @@ function obtenerDatosEmergencia() {
                 "marca": "Dr. Althea",
                 "categoria": "Cremas Hidratantes",
                 "precio": 21.38,
-                "precioOriginal": 25.99,
-                "descuento": 18,
-                "descripcion": "Crema hidratante con aloe vera para piel sensible.",
+                "precioOriginal": null,
+                "descuento": null,
+                "descripcion": "Crema hidratante con aloe vera para piel sensible. Proporciona hidratación intensiva mientras calma la piel irritada o enrojecida.",
                 "destacado": false
             },
             {
@@ -140,9 +148,9 @@ function obtenerDatosEmergencia() {
                 "marca": "Punto SEOUL",
                 "categoria": "Cremas Hidratantes",
                 "precio": 12.71,
-                "precioOriginal": 15.50,
-                "descuento": 18,
-                "descripcion": "Crema con pantenol para hidratación intensiva.",
+                "precioOriginal": null,
+                "descuento": null,
+                "descripcion": "Crema con pantenol para hidratación intensiva. Ideal para pieles secas que necesitan una hidratación profunda y prolongada.",
                 "destacado": false
             },
             {
@@ -151,9 +159,9 @@ function obtenerDatosEmergencia() {
                 "marca": "AP LB",
                 "categoria": "Mascarillas",
                 "precio": 0.98,
-                "precioOriginal": 1.50,
-                "descuento": 34,
-                "descripcion": "Mascarilla facial con glutathione y niacinamida.",
+                "precioOriginal": null,
+                "descuento": null,
+                "descripcion": "Mascarilla facial con glutathione y niacinamida. Ayuda a iluminar la piel y unificar el tono mientras proporciona hidratación intensiva.",
                 "destacado": false
             }
         ]
@@ -186,24 +194,13 @@ function cargarProductoDestacado(productos) {
             console.error('❌ No se encontró .product-title');
         }
         
-        // Actualizar precio
+        // Actualizar precio (SOLO PRECIO ACTUAL)
         const precioElement = document.querySelector('.product-price');
         if (precioElement) {
             let precioHTML = `<span class="current-price">US$ ${productoDestacado.precio.toFixed(2)}</span>`;
             
-            // Si hay precio original y descuento, mostrarlos
-            if (productoDestacado.precioOriginal && productoDestacado.descuento) {
-                precioHTML += `
-                    <span style="text-decoration: line-through; color: #999; font-size: 18px; margin-left: 10px;">
-                        US$ ${productoDestacado.precioOriginal.toFixed(2)}
-                    </span>
-                    <span style="color: #d97777; font-weight: bold; margin-left: 10px;">
-                        ${productoDestacado.descuento}% OFF
-                    </span>`;
-            }
-            
             precioElement.innerHTML = precioHTML;
-            console.log('💰 Precio actualizado');
+            console.log('💰 Precio actualizado (sin descuentos)');
         } else {
             console.error('❌ No se encontró .product-price');
         }
@@ -272,13 +269,21 @@ function cargarProductosRecomendados(productos) {
     
     console.log(`🛍️ Mostrando ${productosParaMostrar.length} productos recomendados`);
     
-    // Crear tarjetas para cada producto
+    // Crear tarjetas para cada producto con botones de detalles
     productosParaMostrar.forEach((producto, index) => {
         const colorFondo = getColorPorMarca(producto.marca);
         
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.dataset.id = producto.id;
+        
+        // Hacer la tarjeta clickable
+        productCard.style.cursor = 'pointer';
+        productCard.addEventListener('click', function(e) {
+            if (!e.target.closest('button')) {
+                abrirModalProducto(producto.id);
+            }
+        });
         
         productCard.innerHTML = `
             <div class="product-card-image" style="background-color: ${colorFondo}">
@@ -290,17 +295,12 @@ function cargarProductosRecomendados(productos) {
                 
                 <div class="product-card-price">
                     <span class="product-current-price">US$ ${producto.precio.toFixed(2)}</span>
-                    ${producto.precioOriginal && producto.descuento ? 
-                        `<span style="text-decoration: line-through; color: #999; font-size: 14px; margin-left: 5px;">
-                            US$ ${producto.precioOriginal.toFixed(2)}
-                        </span>
-                        <span style="color: #d97777; font-size: 14px; margin-left: 5px;">
-                            ${producto.descuento}% OFF
-                        </span>` 
-                        : ''}
                 </div>
                 
-                <button class="btn-add" style="margin-top: 10px; width: 100%;">AGREGAR A LA CESTA</button>
+                <div class="product-card-actions">
+                    <button class="btn-view-details">VER DETALLES</button>
+                    <button class="btn-add">AGREGAR A LA CESTA</button>
+                </div>
             </div>
         `;
         
@@ -308,10 +308,11 @@ function cargarProductosRecomendados(productos) {
         console.log(`✅ Producto ${index + 1} añadido: ${producto.nombre.substring(0, 30)}...`);
     });
     
-    // Re-configurar los eventos de los botones de carrito
+    // Re-configurar los eventos
     setTimeout(() => {
         configurarBotonesCarrito();
-        console.log('✅ Botones de carrito reconfigurados');
+        configurarBotonesDetalles();
+        console.log('✅ Botones configurados');
     }, 100);
 }
 
@@ -378,6 +379,7 @@ function configurarNavbar() {
 function configurarInteracciones() {
     console.log('⚙️ Configurando interacciones...');
     configurarBotonesCarrito();
+    configurarBotonesDetalles();
     configurarBusqueda();
     console.log('✅ Interacciones configuradas');
 }
@@ -399,35 +401,33 @@ function configurarBotonesCarrito() {
             
             const productCard = this.closest('.product-card');
             const productInfo = this.closest('.product-info');
-            
-            let productTitle, productPrice;
+            let productId = null;
             
             if (productCard) {
-                productTitle = productCard.querySelector('.product-card-title').textContent;
-                productPrice = productCard.querySelector('.product-current-price').textContent;
+                productId = productCard.dataset.id;
             } else if (productInfo) {
-                productTitle = productInfo.querySelector('.product-title').textContent;
-                productPrice = productInfo.querySelector('.current-price').textContent;
+                // Para el producto destacado
+                productId = 1; // Asumimos que el destacado es ID 1
             }
             
-            if (productTitle && productPrice) {
-                // Mostrar mensaje
-                alert(`✅ Producto agregado al carrito:\n${productTitle}\nPrecio: ${productPrice}`);
-                
-                // Animación del botón
-                const originalText = this.textContent;
-                this.textContent = '¡AGREGADO!';
-                this.style.backgroundColor = '#4CAF50';
-                this.style.color = 'white';
-                
-                setTimeout(() => {
-                    this.textContent = originalText;
-                    this.style.backgroundColor = '#333';
-                    this.style.color = 'white';
-                }, 2000);
-                
-                // Actualizar contador del carrito
-                actualizarContadorCarrito();
+            if (productId) {
+                agregarAlCarrito(productId, this);
+            }
+        });
+    });
+}
+
+function configurarBotonesDetalles() {
+    const viewButtons = document.querySelectorAll('.btn-view-details');
+    console.log(`👁️ Encontrados ${viewButtons.length} botones de detalles`);
+    
+    viewButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const productCard = this.closest('.product-card');
+            const productId = productCard.dataset.id;
+            if (productId) {
+                abrirModalProducto(parseInt(productId));
             }
         });
     });
@@ -451,25 +451,121 @@ function performSearch() {
     const searchTerm = searchInput.value.trim();
     
     if (searchTerm) {
-        alert(`🔍 Buscando: "${searchTerm}"\n\nEn una versión completa, aquí se filtrarían los productos según tu búsqueda.`);
+        console.log(`🔍 Buscando: "${searchTerm}"`);
+        // En una implementación real, aquí se filtrarían los productos
+        alert(`Buscando: "${searchTerm}"\n\nEn una versión completa, aquí se mostrarían los resultados de búsqueda.`);
     }
 }
 
-// =================== FUNCIONES AUXILIARES ===================
-function getColorPorMarca(marca) {
-    const coloresMarcas = {
-        'Beauty of Joseon': '#f0e6d6',
-        'celimax': '#e6f0f7',
-        'Dr. Althea': '#f7e6e6',
-        'Punto SEOUL': '#e6f7e9',
-        'AP LB': '#f0e6f7',
-        'COSRX': '#e6f4f7',
-        'I\'m from': '#f7f0e6',
-        'LANEIGE': '#e6e7f7',
-        'default': '#f5f5f5'
-    };
+// =================== FUNCIONES DE MODAL ===================
+function abrirModalProducto(productId) {
+    console.log(`📱 Abriendo modal para producto ${productId}`);
     
-    return coloresMarcas[marca] || coloresMarcas.default;
+    // Buscar el producto en los datos
+    const producto = productosData?.productos?.find(p => p.id === productId);
+    
+    if (!producto) {
+        console.error('❌ Producto no encontrado:', productId);
+        return;
+    }
+    
+    const colorFondo = getColorPorMarca(producto.marca);
+    
+    // Crear contenido del modal
+    const modalHTML = `
+        <div class="product-modal">
+            <button class="modal-close" onclick="cerrarModalProducto()">×</button>
+            <div class="modal-content">
+                <div class="modal-product-info">
+                    <div class="modal-product-image">
+                        <div style="background-color: ${colorFondo}; height: 300px; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                            <span style="color: rgba(0,0,0,0.5); font-size: 18px; font-weight: bold;">${producto.marca}</span>
+                        </div>
+                    </div>
+                    <div class="modal-product-details">
+                        <h2 class="modal-product-title">${producto.nombre}</h2>
+                        <div class="modal-product-price">US$ ${producto.precio.toFixed(2)}</div>
+                        
+                        <div class="action-buttons">
+                            <button class="btn-add" onclick="agregarAlCarritoDesdeModal(${productId})">
+                                AGREGAR A LA CESTA
+                            </button>
+                        </div>
+                        
+                        <div class="modal-description">
+                            <h3>Descripción del Producto</h3>
+                            <p>${producto.descripcion}</p>
+                            <p style="margin-top: 10px; font-size: 14px;">Formulado usando solamente ingredientes certificados EWG, apto para pieles sensibles.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Crear o actualizar el contenedor del modal
+    let modalContainer = document.getElementById('productModal');
+    if (!modalContainer) {
+        modalContainer = document.createElement('div');
+        modalContainer.id = 'productModal';
+        modalContainer.className = 'product-modal-overlay';
+        document.body.appendChild(modalContainer);
+    }
+    
+    modalContainer.innerHTML = modalHTML;
+    modalContainer.style.display = 'flex';
+    
+    // Prevenir scroll del body
+    document.body.style.overflow = 'hidden';
+    
+    // Cerrar modal al hacer clic fuera
+    modalContainer.addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarModalProducto();
+        }
+    });
+}
+
+function cerrarModalProducto() {
+    const modalContainer = document.getElementById('productModal');
+    if (modalContainer) {
+        modalContainer.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+function agregarAlCarritoDesdeModal(productId) {
+    console.log(`🛒 Producto ${productId} agregado desde modal`);
+    agregarAlCarrito(productId);
+    cerrarModalProducto();
+}
+
+// =================== FUNCIONES DE CARRITO ===================
+function agregarAlCarrito(productId, buttonElement = null) {
+    console.log(`🛒 Agregando producto ${productId} al carrito`);
+    
+    // Incrementar contador global
+    carritoCount++;
+    
+    // Actualizar badge visual
+    actualizarContadorCarrito();
+    
+    // Animación del botón si se proporcionó
+    if (buttonElement) {
+        const originalText = buttonElement.textContent;
+        buttonElement.textContent = '¡AGREGADO!';
+        buttonElement.style.backgroundColor = '#4CAF50';
+        buttonElement.style.color = 'white';
+        
+        setTimeout(() => {
+            buttonElement.textContent = originalText;
+            buttonElement.style.backgroundColor = '#333';
+            buttonElement.style.color = 'white';
+        }, 1500);
+    }
+    
+    // En una implementación real, aquí guardarías el producto en el carrito
+    console.log(`🛒 Carrito: ${carritoCount} productos`);
 }
 
 function actualizarContadorCarrito() {
@@ -490,21 +586,38 @@ function actualizarContadorCarrito() {
             background-color: #d97777;
             color: white;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: bold;
         `;
         cartContainer.style.position = 'relative';
         cartContainer.appendChild(badge);
     }
     
-    // Incrementar contador
-    let currentCount = parseInt(badge.textContent) || 0;
-    badge.textContent = currentCount + 1;
-    console.log(`🛒 Carrito actualizado: ${currentCount + 1} productos`);
+    // Actualizar contador
+    badge.textContent = carritoCount;
+    console.log(`🛒 Badge actualizado: ${carritoCount} productos`);
+}
+
+// =================== FUNCIONES AUXILIARES ===================
+function getColorPorMarca(marca) {
+    const coloresMarcas = {
+        'Beauty of Joseon': '#f0e6d6',
+        'celimax': '#e6f0f7',
+        'Dr. Althea': '#f7e6e6',
+        'Punto SEOUL': '#e6f7e9',
+        'AP LB': '#f0e6f7',
+        'COSRX': '#e6f4f7',
+        'I\'m from': '#f7f0e6',
+        'LANEIGE': '#e6e7f7',
+        'default': '#f5f5f5'
+    };
+    
+    return coloresMarcas[marca] || coloresMarcas.default;
 }
 
 function mostrarErrorCarga(mensaje) {
@@ -544,6 +657,12 @@ function mostrarErrorCarga(mensaje) {
         `;
     }
 }
+
+// =================== FUNCIONES GLOBALES PARA HTML ===================
+// Estas funciones son llamadas desde los atributos onclick del HTML
+window.agregarAlCarritoDestacado = function() {
+    agregarAlCarrito(1, event.target);
+};
 
 // =================== DEBUG INICIAL ===================
 console.log('🎯 script.js cargado correctamente');
